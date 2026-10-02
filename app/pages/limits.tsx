@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
 
 async function getUserId() {
     const session = await auth();
