@@ -19,11 +19,15 @@ interface SpendingLimitChartProps {
 
 export default function SpendingLimitChart({transactions, limits = {}}: SpendingLimitChartProps) {
   const chartData = useMemo(() => {
-    const categorySpent: Record<string, number> = {};
+    const spent: Record<string, number> = {};
 
-    transactions.forEach((tx) => {
-      const cat = DEFAULT_CATEGORIES.includes(tx.category) ? tx.category : "Others";
-      categorySpent[cat] = (categorySpent[cat] || 0) + Number(tx.amount);
+    DEFAULT_CATEGORIES.forEach(category => {
+      spent[category] = 0;
+    });
+    
+    transactions.forEach((record) => {
+      const cat = DEFAULT_CATEGORIES.includes(record.category) ? record.category : "Others";
+      spent[cat]+= Number(record.amount);
     });
 
     const allCategories = [...DEFAULT_CATEGORIES];
@@ -37,23 +41,24 @@ export default function SpendingLimitChart({transactions, limits = {}}: Spending
 
     return allCategories.map((category) => ({
       category,
-      Spent: Number((categorySpent[category] || 0).toFixed(2)),
-      Limit: Number((limits[category] || 0).toFixed(2))
+      spending: Number(spent[category].toFixed(2)),
+      // guard for unset limits
+      limit: Number((limits[category] || 0).toFixed(2))
     }));
-  }, [transactions, limits]);
+  }, [transactions, limits]); //caching, only updates when transactions or limits change
 
   return (
     <div className="spending-chart-container">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{top: 20, right: 20, left: 10, bottom: 40}}>
+        <BarChart data={chartData} margin={{top: 10, right: 10, left: 10, bottom: 10}}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e8dfd6" />
-          <XAxis dataKey="category" tick={{fontSize: 12, fill: "#736055"}} interval={0} angle={-40} textAnchor="end"/>
+          <XAxis dataKey="category" tick={{fontSize: 12, fill: "#736055"}} interval={0} angle={-40} textAnchor="end" height={60}/>
           <YAxis tick={{fontSize: 12, fill: "#736055"}} tickFormatter={(val) => `$${val}`}/> {/* format dollar sign for all y values*/}
           {/* hover pop-up card on bars, values automatically passed */}
-          <Tooltip formatter={(amount: any, name: any) => [`$${Number(amount).toFixed(2)}`,name]}/> 
-          <Legend verticalAlign="top" height={36}/>
-          <Bar dataKey="Spent" fill="#9c6644"/>
-          <Bar dataKey="Limit" fill="#588157"/>
+          <Tooltip formatter={(amount: any, label: any) => [`$${Number(amount).toFixed(2)}`,label]}/> 
+          <Legend verticalAlign="bottom" height={36}/>
+          <Bar dataKey="spending" fill="#9c6644"/>
+          <Bar dataKey="limit" fill="#588157"/>
         </BarChart>
       </ResponsiveContainer>
     </div>
