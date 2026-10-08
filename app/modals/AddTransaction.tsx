@@ -35,8 +35,8 @@ export default function AddTransactionModal({ onAddTransaction }: AddTransaction
       await onAddTransaction(parseFloat(amount), merchant, category, date);
       handleClose();
     }
-    catch(error){
-      alert("Fail to add transaction.");
+    catch{
+      alert("Failed to add transaction...");
     }
   };
 

@@ -55,7 +55,7 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
             });
             const data = await response.json();
             if (!response.ok || !data.success) {
-                throw new Error(data.error || "Failed to process the statement.");
+                alert("Failed to process the statement...");
             }
 
             setIsUploading(false);
@@ -76,7 +76,7 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
             }
         } catch (error: any) {
             setIsUploading(false);
-            throw new Error(error.message || "An error occurred.");
+            alert("An error occurred while uploading...");
         }
     };
 

@@ -23,8 +23,8 @@ export default function AddLimitModal({ onAddLimit }: AddLimitModalProps) {
       setCategory("");
       setAmount("");
       setOpen(false);
-    } catch ( error ){
-      alert("Fail to set spending limit.");
+    } catch{
+      alert("Failed to set spending limit...");
     }
   };
 

@@ -28,11 +28,10 @@ export default function AddSavingsModal({ currentSavings = 0, onSaveSavings }: A
       setIsLoading(true);
       await onSaveSavings(parseFloat(amount));
       setOpen(false);
-    } catch (err) {
-      alert("Failed to update savings...");
-    } finally {
       setIsLoading(false);
-    }
+    } catch {
+      alert("Failed to update savings...");
+    } 
   };
 
   return (

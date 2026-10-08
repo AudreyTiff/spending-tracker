@@ -19,7 +19,7 @@ export default function DeleteConfirmationModal({ transactionId, onDelete }: Del
         setIsDeleting(true);
         try{
             await onDelete(transactionId);
-        } catch (error){
+        } catch {
             alert("Error deleting transaction...")
         }
         setIsOpen(false);

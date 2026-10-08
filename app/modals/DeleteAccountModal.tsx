@@ -22,7 +22,7 @@ export default function DeleteAccountModal({ onDeleteAccount }: DeleteAccountMod
             setIsDeleting(false);
             setIsOpen(false);
             window.location.href = "/login";
-        } catch (error: any) {
+        } catch {
             alert("Failed to delete account...");
         }
     };
