@@ -21,6 +21,8 @@ model User {
   transactions  Transaction[]
   spendingLimits SpendingLimit[]
   saving        Saving?
+  comment       String?
+  commentDate   DateTime?
 }
 
 model Account {
