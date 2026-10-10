@@ -54,7 +54,7 @@ export default function Sidebar({ activePage = "dashboard" }: SidebarProps) {
         <div className="sidebar-theme-toggle">
           <span className="theme-toggle-label">Dark Mode</span>
           <button type="button" className={`toggle-switch ${isDarkMode ? "active" : ""}`} onClick={toggleDarkMode} aria-label="Toggle dark mode">
-          <div className="toggle-slider" />
+          <div className="toggle-slider"/>
           </button>
         </div>
       </div>

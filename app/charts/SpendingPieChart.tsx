@@ -66,7 +66,7 @@ export default function SpendingPieChart({ transactions }: SpendingPieChartProps
             ))}
           </Pie>          
           <Tooltip formatter={(amount: any, label: any) => [`$${Number(amount).toFixed(2)}`, label]}/>
-          <Legend verticalAlign="bottom" height={36}/>
+          <Legend verticalAlign="bottom" height={56}/>
         </PieChart>
       </ResponsiveContainer>
     </div>
