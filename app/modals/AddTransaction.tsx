@@ -43,7 +43,7 @@ export default function AddTransactionModal({ onAddTransaction }: AddTransaction
   return (
     <>
     <button type="button" className="small-button" onClick={() => setOpen(true)}> + Add Transaction </button>
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs"fullWidth>
       <DialogTitle sx={{ pb: 1, pt: 2, px: 3 }}>
         <div className="modal-header">
           <h3 className="modal-title">Add Transaction</h3>
@@ -73,6 +73,7 @@ export default function AddTransactionModal({ onAddTransaction }: AddTransaction
             <label htmlFor="date">Date</label>
             <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)} className="modal-input" required/>
             <div className="modal-actions">
+              <button type="button" className="white-button" onClick={() => setOpen(false)}> Cancel </button>
               <button type="submit" className="small-button">Add Transaction</button>
             </div>
           </div>

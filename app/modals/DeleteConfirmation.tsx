@@ -39,7 +39,7 @@ export default function DeleteConfirmationModal({ transactionId, onDelete }: Del
                 <p>Are you sure you want to delete this?</p>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3 }}>
-                <button onClick={() => setIsOpen(false)} className="small-button"> Cancel </button>
+                <button onClick={() => setIsOpen(false)} className="white-button"> Cancel </button>
                 <button onClick={handleConfirm} className="small-button"> Yes </button>
             </DialogActions>
         </Dialog>

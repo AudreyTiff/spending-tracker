@@ -33,7 +33,7 @@ export default function AddLimitModal({ onAddLimit }: AddLimitModalProps) {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="small-button"> + Set Limit </button>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth >
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ pb: 1, pt: 2, px: 3 }}>
           <div className="modal-header">
             <h3 className="modal-title">Set Monthly Limit</h3>
@@ -62,7 +62,7 @@ export default function AddLimitModal({ onAddLimit }: AddLimitModalProps) {
             </div>
 
             <div className="modal-actions">
-              <button type="button" onClick={() => setOpen(false)} className="btn-secondary">Cancel</button>
+              <button type="button" onClick={() => setOpen(false)} className="white-button">Cancel</button>
               <button type="submit" className="small-button" >Modify Limit</button>
             </div>
           </form>

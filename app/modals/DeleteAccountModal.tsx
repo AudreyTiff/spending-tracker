@@ -43,7 +43,7 @@ export default function DeleteAccountModal({ onDeleteAccount }: DeleteAccountMod
                     </p>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 3 }}>
-                    <button type="button" onClick={() => setIsOpen(false)} disabled={isDeleting} className="btn-secondary">Cancel</button>
+                    <button type="button" onClick={() => setIsOpen(false)} disabled={isDeleting} className="white-button">Cancel</button>
                     <button type="button" onClick={handleConfirm} disabled={isDeleting} className="small-button" style={{ backgroundColor: "#dc2626" }}>{isDeleting ? "Deleting..." : "Delete"}</button>
                 </DialogActions>
             </Dialog>

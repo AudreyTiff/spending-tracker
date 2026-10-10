@@ -51,7 +51,7 @@ export default function AddSavingsModal({ currentSavings = 0, onSaveSavings }: A
               <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="modal-input" placeholder="Enter savings" min="0" step="0.01" required />
             </div>
             <div className="modal-actions">
-              <button type="button" onClick={() => setOpen(false)} className="btn-secondary"> Cancel </button>
+              <button type="button" onClick={() => setOpen(false)} className="white-button"> Cancel </button>
               <button type="submit" className="small-button"> Save </button>
             </div>
           </form>

@@ -83,7 +83,7 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
     return (
         <>
         <button type="button" onClick={handleOpen} className="small-button"> + Upload Statement</button>
-        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
             <DialogTitle sx={{ pb: 1, pt: 2, px: 3 }}>
                 <div className="modal-header">
                     <h3 className="modal-title">Upload Bank Statement</h3>
@@ -99,8 +99,8 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
                         {file && (<p><strong>{file.name}</strong> ({(file.size / 1024).toFixed(1)} KB)</p>)}
                     </div>
                     <div className="modal-actions">
-                        <button type="button" onClick={handleClose} className="btn-secondary">Cancel</button>
-                        <button type="button" onClick={startUpload} className="btn-submit"> Upload </button>
+                        <button type="button" onClick={handleClose} className="white-button">Cancel</button>
+                        <button type="button" onClick={startUpload} className="submit"> Upload </button>
                     </div>
                 </div>
             </DialogContent>
