@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import Sidebar from "./Sidebar";
+import Sidebar from "./sidebar";
 import "@/app/pages/styles.css";
 import { auth } from "@/auth";
 import AddTransactionModal from "@/app/modals/AddTransaction";

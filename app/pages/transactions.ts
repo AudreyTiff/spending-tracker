@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function addTransaction(amount: number, merchant: string, category: string, date: string) {
     const session = await auth();
     if (!session?.user?.id) {
-        throw new Error("Unauthorized");
+        throw new Error("Unauthorised");
     }
 
     await prisma.transaction.create({
@@ -27,7 +27,7 @@ export async function addTransaction(amount: number, merchant: string, category:
 export async function deleteTransaction(id: string) {
     const session = await auth();
     if (!session?.user?.id) {
-        throw new Error("Unauthorized");
+        throw new Error("Unauthorised");
     }
 
     await prisma.transaction.delete({ where: { id } });
