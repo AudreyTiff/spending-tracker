@@ -1,7 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { DEFAULT_CATEGORIES } from "./SpendingPieChart";
+import { DEFAULT_CATEGORIES } from "./categories";
 
 export interface TransactionItem {
   id: string;
