@@ -4,6 +4,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import "@/app/pages/styles.css";
+import {useRouter} from "next/navigation";
 
 export interface UploadSuccessData {
     fileName: string;
@@ -24,6 +25,8 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
     const [uploadComplete, setUploadComplete] = useState(false);
     const [uploadResult, setUploadResult] = useState<UploadSuccessData | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const router = useRouter();
+    
     const handleOpen = () => {
         setFile(undefined);
         setIsUploading(false);
@@ -49,13 +52,15 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
         try {
             const formData = new FormData();
             formData.append("file", file);
-            const response = await fetch("/api/statement/upload", {
+            const response = await fetch("/api/autoai", {
                 method: "POST",
                 body: formData
             });
             const data = await response.json();
             if (!response.ok || !data.success) {
-                alert("Failed to process the statement...");
+                setIsUploading(false);
+                alert(data.error || "Failed to process the statement...");
+                return;
             }
 
             setIsUploading(false);
@@ -74,6 +79,10 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
             if (onUploadSuccess) {
                 onUploadSuccess(res);
             }
+            alert("Statement uploaded successfully!");
+            router.refresh();
+            handleClose();
+            router.push("/transaction");
         } catch (error: any) {
             setIsUploading(false);
             alert("An error occurred while uploading...");
@@ -100,7 +109,7 @@ export default function UploadStatementModal({onUploadSuccess}: UploadStatementM
                     </div>
                     <div className="modal-actions">
                         <button type="button" onClick={handleClose} className="white-button">Cancel</button>
-                        <button type="button" onClick={startUpload} className="submit"> Upload </button>
+                        <button type="button" onClick={startUpload} disabled={isUploading} className="small-button"> Upload </button>
                     </div>
                 </div>
             </DialogContent>
