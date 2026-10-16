@@ -51,3 +51,13 @@ export async function getUserTransactions() {
         userId: t.userId
     }));
 }
+
+
+export async function modifyTransaction(id: string, amount: number, merchant: string, category: string, date: string) {
+    await prisma.transaction.update({
+        where: { id },
+        data: { amount, merchant, category, date: new Date(date) }
+    });
+    revalidatePath("/transaction");
+    revalidatePath("/page");
+}
