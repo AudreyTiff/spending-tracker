@@ -5,7 +5,8 @@ import { auth } from "@/auth";
 import AddTransactionModal from "@/app/modals/AddTransaction";
 import UploadStatementModal from "@/app/modals/UploadStatement";
 import DeleteConfirmationModal from "@/app/modals/DeleteConfirmation";
-import { addTransaction, deleteTransaction } from "./transactions";
+import { addTransaction, deleteTransaction, modifyTransaction } from "./transactions";
+import ModifyModal from "../modals/ModifyTransaction";
 
 export default async function TransactionPage() {
     const session = await auth();
@@ -65,7 +66,7 @@ export default async function TransactionPage() {
                                                     <td className="bold-cell">{t.merchant}</td>
                                                     <td><span className="category-pill">{t.category}</span></td>
                                                     <td className="bold-cell">${t.amount.toFixed(2)}</td>
-                                                    <td><DeleteConfirmationModal transactionId={t.id} onDelete={deleteTransaction} /></td>
+                                                    <td><ModifyModal transaction={t} onModifyTransaction={modifyTransaction}/>          <DeleteConfirmationModal transactionId={t.id} onDelete={deleteTransaction} /></td>
                                                 </tr>
                                             ))}
                                         </tbody>
