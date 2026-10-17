@@ -1,119 +1,231 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import UploadStatementModal, { UploadSuccessData } from "@/app/modals/UploadStatement";
+import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
+import Sidebar from "./sidebar";
 import SpendingPieChart, { TransactionItem } from "@/app/charts/SpendingPieChart";
-import AddLimitModal from "@/app/modals/AddLimit";
 import SpendingLimitChart from "@/app/charts/SpendingLimitChart";
+import AddLimitModal from "@/app/modals/AddLimit";
+import AddSavingsModal from "@/app/modals/AddSavingsModal";
+import { getSpendingLimits, saveSpendingLimit } from "./limits";
+import { getSavings, saveSavings } from "./savings";
+import { getUserTransactions } from "./transactions";
+import { Summary,generateComment } from "../api/autoai/comment";
+import { DEFAULT_CATEGORIES } from "@/app/charts/categories";
 import "./styles.css";
-import NavBar from "./navbar";
-
-const dummyUserId = "cm12abcde00001234fghij567";
-
-const dummyTransactions: TransactionItem[] = [
-  {
-    id: "cm12abxyz00019876klmno123",
-    amount: 145.50,
-    merchant: "Woolworths",
-    category: "Groceries",
-    date: new Date("2026-09-10T14:30:00Z"),
-    userId: dummyUserId,
-  },
-  {
-    id: "cm12abxyz00029876klmno456",
-    amount: 50.00,
-    merchant: "Public Transport Victoria (Myki)",
-    category: "Transport",
-    date: new Date("2026-09-08T08:15:00Z"),
-    userId: dummyUserId,
-  },
-  {
-    id: "cm12abxyz00039876klmno789",
-    amount: 110.00,
-    merchant: "Energy Bay",
-    category: "Utilities",
-    date: new Date("2026-09-05T09:00:00Z"),
-    userId: dummyUserId,
-  },
-  {
-    id: "cm12abxyz00049876klmno321",
-    amount: 34.99,
-    merchant: "Cotton On",
-    category: "Shopping",
-    date: new Date("2026-09-02T12:45:00Z"),
-    userId: dummyUserId,
-  },
-  {
-    id: "cm12abxyz00059876klmno654",
-    amount: 25.00,
-    merchant: "Sky Music Store",
-    category: "Entertainment",
-    date: new Date("2026-08-28T16:20:00Z"),
-    userId: dummyUserId,
-  },
-  {
-    id: "cm12abxyz00069876klmno987",
-    amount: 12.50,
-    merchant: "Local Coffee Roasters",
-    category: "Eating Out",
-    date: new Date("2026-09-12T07:30:00Z"),
-    userId: dummyUserId,
-  }
-];
 
 export default function HomePage() {
-  const [user] = useState("Test User");
-  const [transactions, setTransactions] = useState<TransactionItem[]>(dummyTransactions);
+  const [userName, setUserName] = useState<string>("User");
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [limits, setLimits] = useState<Record<string, number>>({});
+  const [savings, setSavings] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [comments, setComments] = useState<string>("");
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await fetch("/api/statement/upload");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && Array.isArray(data.transactions) && data.transactions.length > 0) {
-            setTransactions(data.transactions);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading transactions...", err);
-      }
-    };
+    fetch("/api/auth/session").then((res) => res.json()).then((session) => {
+      if (session?.user?.name) { setUserName(session.user.name); }
+    });
 
-    fetchTransactions();
+    const loadDashboardData = async () => {
+      const [trans, savedLimits, savedSavings] = await Promise.all([
+        getUserTransactions(),
+        getSpendingLimits(),
+        getSavings()
+      ]);
+      if (trans) { setTransactions(trans as TransactionItem[]) };
+      if (savedLimits) { setLimits(savedLimits) };
+      if (typeof savedSavings === "number") { setSavings(savedSavings) };
+      setLoading(false);
+    };
+    loadDashboardData();
   }, []);
 
-  const handleUploadSuccess = (data: UploadSuccessData) => {
-    if (data.transactions && data.transactions.length > 0) {
-      setTransactions(data.transactions);
+  const handleAddLimit = async (category: string, amount: number) => {
+    setLimits((prev) => ({ ...prev, [category]: amount }));
+    try {
+      await saveSpendingLimit(category, amount);
+    } catch {
+      alert("Failed to save spending limit...");
+      const savedLimits = await getSpendingLimits();
+      setLimits(savedLimits);
     }
   };
 
-  const handleAddLimit = (category: string, amount: number) => {
-    setLimits((prev) => ({ ...prev, [category]: amount }));
+  const handleSaveSavings = async (saving: number) => {
+    try {
+      const updated = await saveSavings(saving);
+      setSavings(updated);
+    } catch {
+      alert("Failed to save savings...");
+    }
   };
+  const currentMonthTransactions = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    return transactions.filter((tx) => {
+      const d = new Date(tx.date);
+      return (
+        !isNaN(d.getTime()) &&
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear
+      );
+    });
+  }, [transactions]);
+
+  const totalThisMonthSpending = useMemo(() => {
+    return currentMonthTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  }, [currentMonthTransactions]);
+
+  const sneakPeekTransactions = useMemo(() => {
+    return transactions.slice(0, 5);
+  }, [currentMonthTransactions, transactions]);
+
+  useEffect(()=> {
+      if (transactions.length>0) {
+        const loadComments = async () =>{
+          const catAndSpent: Record<string, number> = {};  
+          DEFAULT_CATEGORIES.forEach(category => {
+            catAndSpent[category] = 0;
+          });
+        
+          currentMonthTransactions.forEach((record) => {
+            const cat = DEFAULT_CATEGORIES.includes(record.category) ? record.category : "Others";
+            catAndSpent[cat]+= Number(record.amount);
+          }); 
+          const summaries: Summary[] = DEFAULT_CATEGORIES.map((cat)=> ({category: cat, spending: catAndSpent[cat] || 0, limit: limits[cat] || 0}))
+          const aiComment = await generateComment(summaries);
+          setComments(aiComment);
+        };
+      loadComments();
+      }
+  }, [currentMonthTransactions, limits]);
 
   return (
-    <div className="home">
-      <NavBar />
-      <div className="main-box">
-        <h1 className="welcome-title">Welcome, {user}</h1>
-      </div>
+    <div className="dashboard-layout">
+      <Sidebar activePage="dashboard" />
+      <main className="dashboard-main">
+        <header className="dashboard-header">
+          <div>
+            <h1 className="dashboard-title">Welcome back, {userName}!</h1>
+            <p className="dashboard-subtitle"> Below is your monthly spending summary!</p>
+          </div>
+        </header>
 
-      <div className="main-box">
+        {/* small top cards */}
+        <section className="mini-cards-grid">
+          <div className="mini-card">
+            <div className="mini-card-header">
+              <span className="mini-card-title">This Month's Transactions</span>
+            </div>
+            <div className="mini-card-value">{currentMonthTransactions.length} </div>
+          </div>
+          <div className="mini-card">
+            <div className="mini-card-header">
+              <span className="mini-card-title">Total Spending</span>
+            </div>
+            <div className="mini-card-value"> ${totalThisMonthSpending.toLocaleString()} </div>
+          </div>
+          <div className="mini-card">
+            <div className="mini-card-header">
+              <span className="mini-card-title">Savings</span>
+              <AddSavingsModal currentSavings={savings} onSaveSavings={handleSaveSavings} />
+            </div>
+            <div className="mini-card-value"> ${savings.toLocaleString()} </div>
+          </div>
+        </section>
 
-        <div className="content-header">Spending Breakdown
-          <UploadStatementModal onUploadSuccess={handleUploadSuccess} />
-        </div>
-        <SpendingPieChart transactions={transactions} />
-        <div className="limit-header">
-          <div className="content-header">Spending Limit</div>
-          <AddLimitModal onAddLimit={handleAddLimit}/>
-        </div>
+        {/* charts */}
+        <section className="charts-grid">
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <h2 className="dashboard-card-title">Spending Limits</h2>
+              <AddLimitModal onAddLimit={handleAddLimit} />
+            </div>
+            <div className="dashboard-card-body">
+              {currentMonthTransactions.length === 0 && Object.keys(limits).length === 0 ?
+                (<div className="chart-empty-state">No limit or spending data yet for this month. </div>)
+                : (<SpendingLimitChart transactions={currentMonthTransactions} limits={limits} />)}
+            </div>
+          </div>
 
-        <SpendingLimitChart transactions={transactions} limits={limits} />
-      </div>
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <h2 className="dashboard-card-title">Spending Breakdown</h2>
+            </div>
+            <div className="dashboard-card-body">
+              {currentMonthTransactions.length === 0 ?
+                (<div className="chart-empty-state"> No spending data to display yet </div>)
+                : (<SpendingPieChart transactions={currentMonthTransactions} />)}
+            </div>
+          </div>
+        </section>
+
+        {/* ai comment section */}
+        <section className="bottom-grid">
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <div>
+                <h2 className="dashboard-card-title"> AI Comment</h2>
+              </div>
+            </div>
+            <div className="dashboard-card-body">
+              <div className="dashboard-subtitle">{comments}</div>
+            </div>
+          </div>
+
+          {/* transaction table sneak peek */}
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <div>
+                <h2 className="dashboard-card-title">All-Time Transactions</h2>
+              </div>
+              <Link href="/transaction" className="link-action">View all &rarr;</Link>
+            </div>
+            <div className="dashboard-card-body">
+              {sneakPeekTransactions.length === 0 ? (
+                <div className="chart-empty-state"><p>No transactions recorded yet.</p></div>
+              ) : ( <div className="sneakpeek-table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Merchant</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sneakPeekTransactions.map((tx) => (
+                        <tr key={tx.id} >
+                          <td>
+                            <div className="bold-cell">
+                              <span>{tx.merchant}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span>{tx.category}</span>
+                          </td>
+                          <td className="bold-cell">
+                            ${Number(tx.amount || 0).toFixed(2)}
+                          </td>
+                          <td>
+                            <span className="mini-card-subtext">
+                              {new Date(tx.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
