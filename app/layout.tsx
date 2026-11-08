@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My Spending Tracker",
+  title: "$wish - My Spending Tracker",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
