@@ -1,5 +1,5 @@
 # Project Title
-AI Spending Tracker
+$wish - an AI integrated Spending Tracker
 
 ## Description
 A personal spending tracker that help user manage transactions, budget, and current savings. Some features utilise AI to automate tasks. 
